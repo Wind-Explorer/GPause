@@ -1,0 +1,84 @@
+﻿<Page
+    x:Class="GPause.Views.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:viewmodels="using:GPause.ViewModels" xmlns:services="using:GPause.Services"
+    mc:Ignorable="d"
+    d:DataContext="{d:DesignInstance Type=viewmodels:MainViewModel}"
+    >
+    <Page.Resources>
+        <services:BoolToStatusConverter x:Key="BoolToStatusConverter"/>
+    </Page.Resources>
+    <Grid x:Name="ContentArea">
+        <Grid x:Name="LoadingArea" Visibility="Visible">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="5">
+                <ProgressRing IsIndeterminate="True" Width="50" Height="50"/>
+                <TextBlock Text="Loading..." FontSize="14" HorizontalAlignment="Center"/>
+            </StackPanel>
+        </Grid>
+        <Grid x:Name="MainArea" Visibility="Collapsed">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="48" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <TextBlock Text="Application Pauser" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" FontSize="18" FontWeight="Light"/>
+            <CommandBar Grid.Row="0" Background="Transparent" HorizontalAlignment="Right" IsOpen="False" DefaultLabelPosition="Right" IsSticky="False">
+                <AppBarButton x:Name="PauseProcessButton" Icon="Pause" Label="Pause" Command="{Binding SuspendProcessCommand}" Click="PauseProcessButton_Click"/>
+                <AppBarButton x:Name="ResumeProcessButton" Icon="Play" Label="Resume" Command="{Binding ResumeProcessCommand}" Click="ResumeProcessButton_Click"/>
+
+                <CommandBar.SecondaryCommands>
+                    <AppBarButton Icon="Clear" Label="Kill selected process">
+                    </AppBarButton>
+                    <AppBarButton Icon="OpenLocal" Label="Open in File Explorer" Command="{Binding OpenInFileExplorerCommand}">
+                    </AppBarButton>
+                    <AppBarSeparator />
+
+                    <AppBarButton Icon="Refresh" Label="Refresh entries" x:Name="RefreshProcessesEntiresButton" Click="RefreshProcessesEntiresButton_Click" Command="{x:Bind ViewModel.PopulateProcessesListCommand}">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control" Key="R" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+
+                    <AppBarButton Icon="Setting" Label="Settings" x:Name="ShellMenuBarSettingsButton" x:Uid="ShellMenuBarSettingsButton">
+                        <AppBarButton.KeyboardAccelerators>
+                            <KeyboardAccelerator Modifiers="Control" Key="I" />
+                        </AppBarButton.KeyboardAccelerators>
+                    </AppBarButton>
+                </CommandBar.SecondaryCommands>
+            </CommandBar>
+
+            <Grid Grid.Row="1">
+                <ListView x:Name="ProcessesListBox" ItemsSource="{x:Bind ViewModel.ProcessesList}" SelectedIndex="{Binding SelectedProcessIndex, Mode=TwoWay}" Padding="0,0,0,30">
+                    <ListView.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Padding="-12">
+                                <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#888888" Opacity="0.08" Margin="0,15,5,15" CornerRadius="4"/>
+                                <Grid Padding="12">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="60"/>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="30"/>
+                                    </Grid.ColumnDefinitions>
+                                    <Image Source="{Binding AppIcon}" Width="40" Height="40"/>
+                                    <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="2" Padding="10">
+                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="22"/>
+                                        <TextBlock Text="{Binding SystemName}" Opacity="0.7" FontSize="16"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="3">
+                                            <TextBlock Text="ID:" Opacity="0.5" FontSize="12" FontWeight="Light" VerticalAlignment="Center"/>
+                                            <TextBlock Text="{Binding Id}" Opacity="0.7" FontSize="12" FontWeight="Light" VerticalAlignment="Center"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <Ellipse Grid.Column="2" Fill="{Binding Suspended, Converter={StaticResource BoolToStatusConverter}}" Height="12" Width="12" />
+                                </Grid>
+                            </Grid>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </Grid>
+        </Grid>
+    </Grid>
+</Page>

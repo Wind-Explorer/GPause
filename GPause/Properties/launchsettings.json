@@ -1,0 +1,10 @@
+﻿{
+    "profiles": {
+      "GPause (Package)": {
+        "commandName": "MsixPackage"
+      },
+      "GPause (Unpackaged)": {
+        "commandName": "Project"
+      }
+    }
+}
