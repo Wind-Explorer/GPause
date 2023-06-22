@@ -25,15 +25,18 @@
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
 
-            <TextBlock Text="Application Pauser" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10" FontSize="18" FontWeight="Light"/>
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
+                <TextBlock Text="Application Pauser" FontSize="18" FontWeight="Light"/>
+                <Button x:Name="RunAsAdminEventHandler" IsEnabled="{Binding LackPermissions}" Visibility="{Binding LackPermissions}" Content="Restart as administrator" Click="RunAsAdminEventHandler_Click" FontSize="14" Padding="10, 0,10,3" IsEnabledChanged="RunAsAdminEventHandler_IsEnabledChanged"/>
+            </StackPanel>
             <CommandBar Grid.Row="0" Background="Transparent" HorizontalAlignment="Right" IsOpen="False" DefaultLabelPosition="Right" IsSticky="False">
-                <AppBarButton x:Name="PauseProcessButton" Icon="Pause" Label="Pause" Command="{Binding SuspendProcessCommand}" Click="PauseProcessButton_Click"/>
-                <AppBarButton x:Name="ResumeProcessButton" Icon="Play" Label="Resume" Command="{Binding ResumeProcessCommand}" Click="ResumeProcessButton_Click"/>
+                <AppBarButton x:Name="PauseProcessButton" Icon="Pause" Label="Pause" Command="{Binding SuspendProcessCommand}" Click="PauseProcessButton_Click" IsEnabled="{Binding AnyEntrySelected}"/>
+                <AppBarButton x:Name="ResumeProcessButton" Icon="Play" Label="Resume" Command="{Binding ResumeProcessCommand}" Click="ResumeProcessButton_Click" IsEnabled="{Binding AnyEntrySelected}"/>
 
                 <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Clear" Label="Kill selected process">
+                    <AppBarButton x:Name="KillProcessButton" Click="KillProcessButton_Click" Icon="Clear" Label="Kill selected process" Command="{Binding KillSelectedProcessCommand}"  IsEnabled="{Binding AnyEntrySelected}">
                     </AppBarButton>
-                    <AppBarButton Icon="OpenLocal" Label="Open in File Explorer" Command="{Binding OpenInFileExplorerCommand}">
+                    <AppBarButton Icon="OpenLocal" Label="Open in File Explorer" Command="{Binding OpenInFileExplorerCommand}" IsEnabled="{Binding AnyEntrySelected}">
                     </AppBarButton>
                     <AppBarSeparator />
 
@@ -43,7 +46,7 @@
                         </AppBarButton.KeyboardAccelerators>
                     </AppBarButton>
 
-                    <AppBarButton Icon="Setting" Label="Settings" x:Name="ShellMenuBarSettingsButton" x:Uid="ShellMenuBarSettingsButton">
+                    <AppBarButton Icon="Setting" Label="Settings" x:Name="ShellMenuBarSettingsButton" x:Uid="ShellMenuBarSettingsButton" Click="ShellMenuBarSettingsButton_Click">
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Modifiers="Control" Key="I" />
                         </AppBarButton.KeyboardAccelerators>

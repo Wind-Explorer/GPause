@@ -1,6 +1,5 @@
 ﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -9,7 +8,6 @@ using GPause.Models;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using PMan;
-using Windows.Storage;
 using Windows.Storage.FileProperties;
 
 namespace GPause.ViewModels;
@@ -27,7 +25,32 @@ public class MainViewModel : ObservableRecipient
     public int SelectedProcessIndex
     {
         get => _selectedProcessIndex;
-        set => SetProperty(ref _selectedProcessIndex, value);
+        set
+        {
+            SetProperty(ref _selectedProcessIndex, value);
+            AnyEntrySelected = SelectedProcessIndex >= 0;
+        }
+    }
+
+    private string _appHeadingText;
+    public string AppHeadingText
+    {
+        get => _appHeadingText;
+        set => SetProperty(ref _appHeadingText, value);
+    }
+
+    private bool _anyEntrySelected;
+    public bool AnyEntrySelected
+    {
+        get => _anyEntrySelected;
+        set => SetProperty(ref _anyEntrySelected, value);
+    }
+
+    private bool _lackPermissions = false;
+    public bool LackPermissions
+    {
+        get => _lackPermissions;
+        set => SetProperty(ref _lackPermissions, value);
     }
 
     public ICommand PopulateProcessesListCommand
@@ -40,7 +63,7 @@ public class MainViewModel : ObservableRecipient
     private async Task<AsyncVoidMethodBuilder> PopulateProcessesList()
     {
         Debug.WriteLine("Populating Processes List...");
-        var _ProcessesList = new ObservableCollection<ProcessModel>();
+        var _processesList = new ObservableCollection<ProcessModel>();
         foreach (var process in ProcessManager.RunningProcesses())
         {
             var windowText = ProcessManager.GetWindowTitleText(process);
@@ -52,10 +75,11 @@ public class MainViewModel : ObservableRecipient
             var filePath = ProcessManager.GetProcessLocation(process);
             if (filePath == null)
             {
+                LackPermissions = true;
                 continue;
             }
             Debug.WriteLine($"Program: {windowText}\nSuspended: {isSuspended}\n");
-            _ProcessesList.Add(new ProcessModel
+            _processesList.Add(new ProcessModel
             {
                 Name = windowText,
                 SystemName = process.ProcessName,
@@ -66,7 +90,7 @@ public class MainViewModel : ObservableRecipient
                 AppIcon = await GetAppIcon(filePath)
             });
         }
-        ProcessesList = _ProcessesList;
+        ProcessesList = _processesList;
         var e = new AsyncVoidMethodBuilder();
         e.SetResult();
         return e;
@@ -138,17 +162,22 @@ public class MainViewModel : ObservableRecipient
         {
             return;
         }
-        string targetProcessPath;
-        try
+        await PopulateProcessesList();
+        Process.Start("explorer.exe", "/select, \"" + ProcessesList![SelectedProcessIndex].ExecutablePath + "\"");
+    }
+
+    public ICommand KillSelectedProcessCommand
+    {
+        get; private set;
+    }
+    private async void KillSelectedProcess()
+    {
+        if (SelectedProcessIndex <= -1)
         {
-            targetProcessPath = ProcessesList![SelectedProcessIndex].ExecutablePath!;
+            return;
         }
-        catch (ArgumentOutOfRangeException)
-        {
-            await PopulateProcessesList();
-            targetProcessPath = ProcessesList![SelectedProcessIndex].ExecutablePath!;
-        }
-        Process.Start("explorer.exe", "/select, \"" + targetProcessPath + "\"");
+        await PopulateProcessesList();
+        ProcessManager.Terminate(ProcessesList![SelectedProcessIndex].Process!);
     }
 
     private async void InitializeProcessList()
@@ -173,7 +202,9 @@ public class MainViewModel : ObservableRecipient
         SuspendProcessCommand = new RelayCommand(SuspendProcess);
         ResumeProcessCommand = new RelayCommand(ResumeProcess);
         OpenInFileExplorerCommand = new RelayCommand(OpenInFileExplorer);
+        KillSelectedProcessCommand = new RelayCommand(KillSelectedProcess);
         SelectedProcessIndex = 0;
+        AnyEntrySelected = SelectedProcessIndex >= 0;
         InitializeProcessList();
     }
 }
