@@ -1,4 +1,5 @@
 ﻿using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
@@ -12,7 +13,7 @@ using Windows.Storage.FileProperties;
 
 namespace GPause.ViewModels;
 
-public class MainViewModel : ObservableRecipient
+public class MainViewModel : ObservableRecipient, INotifyPropertyChanged
 {
     private ObservableCollection<ProcessModel>? _processesList;
     public ObservableCollection<ProcessModel>? ProcessesList
@@ -53,6 +54,14 @@ public class MainViewModel : ObservableRecipient
         set => SetProperty(ref _lackPermissions, value);
     }
 
+    // Used to trigger list UI update
+    private bool _listUpdates = false;
+    public bool ListUpdates
+    {
+        get => _listUpdates;
+        set => SetProperty(ref _listUpdates, value);
+    }
+
     public ICommand PopulateProcessesListCommand
     {
         get; private set;
@@ -66,6 +75,12 @@ public class MainViewModel : ObservableRecipient
         var _processesList = new ObservableCollection<ProcessModel>();
         foreach (var process in ProcessManager.RunningProcesses())
         {
+            var matchedSystemProcess = false;
+            foreach (var i in ProcessManager.KnownWindowsSystemProcesses)
+            {
+                if (i == process.ProcessName) { matchedSystemProcess = true; break; }
+            }
+            if (matchedSystemProcess) { continue; }
             var windowText = ProcessManager.GetWindowTitleText(process);
             if (windowText == null)
             {
@@ -90,7 +105,11 @@ public class MainViewModel : ObservableRecipient
                 AppIcon = await GetAppIcon(filePath)
             });
         }
-        ProcessesList = _processesList;
+        ProcessesList.Clear();
+        foreach (var processEntry in _processesList)
+        {
+            ProcessesList.Add(processEntry);
+        }
         var e = new AsyncVoidMethodBuilder();
         e.SetResult();
         return e;
@@ -122,6 +141,15 @@ public class MainViewModel : ObservableRecipient
         ProcessManager.Suspend(targetProcess);
         Debug.WriteLine("Re-populating list (suspended)");
         await PopulateProcessesList();
+    }
+
+    public ICommand RefreshProcessesListCommand
+    {
+    get; private set; }
+    private async Task<int> RefreshProcessesList()
+    {
+        await PopulateProcessesList();
+        return 0;
     }
 
     public ICommand ResumeProcessCommand
@@ -198,7 +226,7 @@ public class MainViewModel : ObservableRecipient
     public MainViewModel()
     {
         ProcessesList = new ObservableCollection<ProcessModel>();
-        PopulateProcessesListCommand = new AsyncRelayCommand(PopulateProcessesList);
+        RefreshProcessesListCommand = new AsyncRelayCommand(RefreshProcessesList);
         SuspendProcessCommand = new RelayCommand(SuspendProcess);
         ResumeProcessCommand = new RelayCommand(ResumeProcess);
         OpenInFileExplorerCommand = new RelayCommand(OpenInFileExplorer);

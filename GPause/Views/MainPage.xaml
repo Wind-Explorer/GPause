@@ -13,13 +13,13 @@
         <services:BoolToStatusConverter x:Key="BoolToStatusConverter"/>
     </Page.Resources>
     <Grid x:Name="ContentArea">
-        <Grid x:Name="LoadingArea" Visibility="Visible">
+        <Grid x:Name="LoadingArea" Visibility="Collapsed">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="5">
                 <ProgressRing IsIndeterminate="True" Width="50" Height="50"/>
                 <TextBlock Text="Loading..." FontSize="14" HorizontalAlignment="Center"/>
             </StackPanel>
         </Grid>
-        <Grid x:Name="MainArea" Visibility="Collapsed">
+        <Grid x:Name="MainArea" Visibility="Visible">
             <Grid.RowDefinitions>
                 <RowDefinition Height="48" />
                 <RowDefinition Height="*" />
@@ -27,20 +27,20 @@
 
             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
                 <TextBlock Text="Application Pauser" FontSize="18" FontWeight="Light"/>
-                <Button x:Name="RunAsAdminEventHandler" IsEnabled="{Binding LackPermissions}" Visibility="{Binding LackPermissions}" Content="Restart as administrator" Click="RunAsAdminEventHandler_Click" FontSize="14" Padding="10, 0,10,3" IsEnabledChanged="RunAsAdminEventHandler_IsEnabledChanged"/>
+                <Button x:Name="RunAsAdminEventHandler" IsEnabled="{Binding LackPermissions}" Visibility="{Binding LackPermissions}" Content="Restart as administrator" FontSize="14" Padding="10, 0,10,3" IsEnabledChanged="RunAsAdminEventHandler_IsEnabledChanged"/>
             </StackPanel>
             <CommandBar Grid.Row="0" Background="Transparent" HorizontalAlignment="Right" IsOpen="False" DefaultLabelPosition="Right" IsSticky="False">
-                <AppBarButton x:Name="PauseProcessButton" Icon="Pause" Label="Pause" Command="{Binding SuspendProcessCommand}" Click="PauseProcessButton_Click" IsEnabled="{Binding AnyEntrySelected}"/>
-                <AppBarButton x:Name="ResumeProcessButton" Icon="Play" Label="Resume" Command="{Binding ResumeProcessCommand}" Click="ResumeProcessButton_Click" IsEnabled="{Binding AnyEntrySelected}"/>
+                <AppBarButton x:Name="PauseProcessButton" Icon="Pause" Label="Pause" Command="{Binding SuspendProcessCommand}" IsEnabled="{Binding AnyEntrySelected}"/>
+                <AppBarButton x:Name="ResumeProcessButton" Icon="Play" Label="Resume" Command="{Binding ResumeProcessCommand}" IsEnabled="{Binding AnyEntrySelected}"/>
 
                 <CommandBar.SecondaryCommands>
-                    <AppBarButton x:Name="KillProcessButton" Click="KillProcessButton_Click" Icon="Clear" Label="Kill selected process" Command="{Binding KillSelectedProcessCommand}"  IsEnabled="{Binding AnyEntrySelected}">
+                    <AppBarButton x:Name="KillProcessButton" Icon="Clear" Label="Kill selected process" Command="{Binding KillSelectedProcessCommand}"  IsEnabled="{Binding AnyEntrySelected}">
                     </AppBarButton>
                     <AppBarButton Icon="OpenLocal" Label="Open in File Explorer" Command="{Binding OpenInFileExplorerCommand}" IsEnabled="{Binding AnyEntrySelected}">
                     </AppBarButton>
                     <AppBarSeparator />
 
-                    <AppBarButton Icon="Refresh" Label="Refresh entries" x:Name="RefreshProcessesEntiresButton" Click="RefreshProcessesEntiresButton_Click" Command="{x:Bind ViewModel.PopulateProcessesListCommand}">
+                    <AppBarButton Icon="Refresh" Label="Refresh entries" x:Name="RefreshProcessesEntiresButton"  Command="{Binding RefreshProcessesListCommand}">
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Modifiers="Control" Key="R" />
                         </AppBarButton.KeyboardAccelerators>
@@ -55,7 +55,7 @@
             </CommandBar>
 
             <Grid Grid.Row="1">
-                <ListView x:Name="ProcessesListBox" ItemsSource="{x:Bind ViewModel.ProcessesList}" SelectedIndex="{Binding SelectedProcessIndex, Mode=TwoWay}" Padding="0,0,0,30">
+                <ListView x:Name="ProcessesListBox" ItemsSource="{Binding ProcessesList}" SelectedIndex="{Binding SelectedProcessIndex, Mode=TwoWay}" Padding="0,0,0,30">
                     <ListView.ItemTemplate>
                         <DataTemplate>
                             <Grid Padding="-12">

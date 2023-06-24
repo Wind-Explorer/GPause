@@ -22,11 +22,8 @@ public sealed partial class MainPage : Page
         ViewModel = App.GetService<MainViewModel>();
         DataContext = new MainViewModel();
         InitializeComponent();
-        RefreshProcessesEntries();
-        /*        if (RAA())
-                {
-                    Environment.Exit(0);
-                }*/
+        //RefreshProcessesEntries();
+        //ViewModel.ProcessesList += RefreshProcessesEntries();
     }
 
     private enum AlertActions
@@ -60,18 +57,6 @@ public sealed partial class MainPage : Page
         return e;
     }
 
-    private async void RefreshProcessesEntries()
-    {
-        StartLoading();
-        await Task.Delay(2400);
-
-        ProcessesListBox.ItemsSource = null;
-        Debug.WriteLine("Nulled list");
-        ProcessesListBox.ItemsSource = ViewModel.ProcessesList;
-        Debug.WriteLine("Binded list");
-        StopLoading();
-    }
-
     private async void CheckForAdmin()
     {
         var identity = WindowsIdentity.GetCurrent();
@@ -99,7 +84,7 @@ public sealed partial class MainPage : Page
 
     private void RefreshProcessesEntiresButton_Click(object? sender = null, Microsoft.UI.Xaml.RoutedEventArgs? e = null)
     {
-        RefreshProcessesEntries();
+        //RefreshProcessesEntries();
     }
 
     private void StartLoading()
@@ -113,7 +98,7 @@ public sealed partial class MainPage : Page
         LoadingArea.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
         MainArea.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
     }
-
+/*
     private static void CtrlR()
     {
         // Create an instance of the InputInjector
@@ -140,30 +125,10 @@ public sealed partial class MainPage : Page
             KeyOptions = InjectedInputKeyOptions.KeyUp,
         }});
     }
-
-    private void PauseProcessButton_Click(object sender, RoutedEventArgs e)
-    {
-        Debug.WriteLine("Pause button clicked!");
-        if (ViewModel.SelectedProcessIndex >= 0)
-        {
-            CtrlR();
-            Debug.WriteLine($"Refreshed list (paused) ({ViewModel.SelectedProcessIndex})");
-        }
-    }
-
-    private void ResumeProcessButton_Click(object sender, RoutedEventArgs e)
-    {
-        Debug.WriteLine("Resume button clicked!");
-        if (ViewModel.SelectedProcessIndex >= 0)
-        {
-            CtrlR();
-            Debug.WriteLine($"Refreshed list (resumed) ({ViewModel.SelectedProcessIndex})");
-        }
-    }
-
+*/
     private async void ShellMenuBarSettingsButton_Click(object sender, RoutedEventArgs e)
     {
-        await ShowAlert(xamlRoot: this, Title: "Settings is yet to be implemented.", ContentText: "Look out for future updates!");
+        await ShowAlert(xamlRoot: this, Title: "Settings is yet to be implemented.", ContentText: "Look out for future updates!", DismissButtonText:"Okay");
     }
 
     private void RunAsAdminEventHandler_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
@@ -171,18 +136,8 @@ public sealed partial class MainPage : Page
         CheckForAdmin();
     }
 
-    private async void RunAsAdminEventHandler_Click(object sender, RoutedEventArgs e)
+    private void RunAsAdminEventHandler_Click(object sender, RoutedEventArgs e)
     {
         AdminRelauncher();
-    }
-
-    private async void KillProcessButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (ViewModel.SelectedProcessIndex >= 0)
-        {
-            await Task.Delay(1000);
-            RefreshProcessesEntries();
-            Debug.WriteLine($"Refreshed list (paused) ({ViewModel.SelectedProcessIndex})");
-        }
     }
 }
