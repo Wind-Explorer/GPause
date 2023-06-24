@@ -20,7 +20,7 @@ public static partial class ProcessManager
         DIRECT_IMPERSONATION = 0x0200
     }
 
-    public static string[] KnownWindowsSystemProcesses = new string[] {"GPause", "TextInputHost", "ApplicationFrameHost", "perfmon", "system", "System", "winlogon", "Winlogon", "services", "Services", "smss", "Smss", "lsass", "LSass", "svchost", "Svchost", "spoolsv", "Spoolsv", "csrss", "Csrss", "explorer", "Explorer", "taskhost", "Taskhost", "dwm", "Dwm", "wininit", "Wininit"};
+    public static string[] KnownWindowsSystemProcesses = { "GPause", "TextInputHost", "ApplicationFrameHost", "SystemSettings", "perfmon", "system", "System", "winlogon", "Winlogon", "services", "Services", "smss", "Smss", "lsass", "LSass", "svchost", "Svchost", "spoolsv", "Spoolsv", "csrss", "Csrss", "explorer", "Explorer", "taskhost", "Taskhost", "dwm", "Dwm", "wininit", "Wininit" };
 
     [SuppressUnmanagedCodeSecurity]
     private static partial class NativeMethods

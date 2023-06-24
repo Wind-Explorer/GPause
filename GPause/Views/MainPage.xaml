@@ -13,75 +13,76 @@
         <services:BoolToStatusConverter x:Key="BoolToStatusConverter"/>
     </Page.Resources>
     <Grid x:Name="ContentArea">
-        <Grid x:Name="LoadingArea" Visibility="Collapsed">
-            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="5">
-                <ProgressRing IsIndeterminate="True" Width="50" Height="50"/>
-                <TextBlock Text="Loading..." FontSize="14" HorizontalAlignment="Center"/>
-            </StackPanel>
-        </Grid>
-        <Grid x:Name="MainArea" Visibility="Visible">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="48" />
-                <RowDefinition Height="*" />
-            </Grid.RowDefinitions>
-
-            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="48" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Grid.Row="0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0" Orientation="Horizontal" Spacing="10" HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10">
                 <TextBlock Text="Application Pauser" FontSize="18" FontWeight="Light"/>
-                <Button x:Name="RunAsAdminEventHandler" IsEnabled="{Binding LackPermissions}" Visibility="{Binding LackPermissions}" Content="Restart as administrator" FontSize="14" Padding="10, 0,10,3" IsEnabledChanged="RunAsAdminEventHandler_IsEnabledChanged"/>
+                <Button x:Name="RunAsAdminEventHandler" IsEnabled="{Binding LackPermissions}" Visibility="{Binding LackPermissions}" Content="Restart as administrator" FontSize="14" Padding="10, 0,10,3" IsEnabledChanged="RunAsAdminEventHandler_IsEnabledChanged" Click="RunAsAdminEventHandler_Click"/>
             </StackPanel>
-            <CommandBar Grid.Row="0" Background="Transparent" HorizontalAlignment="Right" IsOpen="False" DefaultLabelPosition="Right" IsSticky="False">
-                <AppBarButton x:Name="PauseProcessButton" Icon="Pause" Label="Pause" Command="{Binding SuspendProcessCommand}" IsEnabled="{Binding AnyEntrySelected}"/>
-                <AppBarButton x:Name="ResumeProcessButton" Icon="Play" Label="Resume" Command="{Binding ResumeProcessCommand}" IsEnabled="{Binding AnyEntrySelected}"/>
-
+            <CommandBar Grid.Column="1" Background="Transparent" HorizontalAlignment="Right" IsOpen="False" DefaultLabelPosition="Right" IsSticky="False">
+                <AppBarButton x:Name="PauseProcessButton" FontWeight="SemiBold" Icon="Pause" Label="Pause" Command="{Binding SuspendProcessCommand}" IsEnabled="{Binding AnyEntrySelected}"/>
+                <AppBarButton x:Name="ResumeProcessButton" FontWeight="SemiBold" Icon="Play" Label="Resume" Command="{Binding ResumeProcessCommand}" IsEnabled="{Binding AnyEntrySelected}"/>
+                <AppBarSeparator/>
+                <AppBarButton x:Name="KillProcessButton" Icon="Clear" Label="Kill" Command="{Binding KillSelectedProcessCommand}"  IsEnabled="{Binding AnyEntrySelected}">
+                </AppBarButton>
+                <AppBarButton Icon="OpenLocal" Label="Reveal" Command="{Binding OpenInFileExplorerCommand}" IsEnabled="{Binding AnyEntrySelected}">
+                </AppBarButton>
+                <AppBarSeparator/>
+                <AppBarButton Icon="Refresh" Label="Refresh" x:Name="RefreshProcessesEntiresButton"  Command="{Binding RefreshProcessesListCommand}">
+                    <AppBarButton.KeyboardAccelerators>
+                        <KeyboardAccelerator Modifiers="Control" Key="R" />
+                    </AppBarButton.KeyboardAccelerators>
+                </AppBarButton>
                 <CommandBar.SecondaryCommands>
-                    <AppBarButton x:Name="KillProcessButton" Icon="Clear" Label="Kill selected process" Command="{Binding KillSelectedProcessCommand}"  IsEnabled="{Binding AnyEntrySelected}">
-                    </AppBarButton>
-                    <AppBarButton Icon="OpenLocal" Label="Open in File Explorer" Command="{Binding OpenInFileExplorerCommand}" IsEnabled="{Binding AnyEntrySelected}">
-                    </AppBarButton>
-                    <AppBarSeparator />
-
-                    <AppBarButton Icon="Refresh" Label="Refresh entries" x:Name="RefreshProcessesEntiresButton"  Command="{Binding RefreshProcessesListCommand}">
-                        <AppBarButton.KeyboardAccelerators>
-                            <KeyboardAccelerator Modifiers="Control" Key="R" />
-                        </AppBarButton.KeyboardAccelerators>
-                    </AppBarButton>
-
                     <AppBarButton Icon="Setting" Label="Settings" x:Name="ShellMenuBarSettingsButton" x:Uid="ShellMenuBarSettingsButton" Click="ShellMenuBarSettingsButton_Click">
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Modifiers="Control" Key="I" />
                         </AppBarButton.KeyboardAccelerators>
                     </AppBarButton>
+                    <AppBarButton Icon="Upload" Label="Look for updates" x:Name="UpdateAppButton"/>
                 </CommandBar.SecondaryCommands>
             </CommandBar>
+        </Grid>
 
-            <Grid Grid.Row="1">
-                <ListView x:Name="ProcessesListBox" ItemsSource="{Binding ProcessesList}" SelectedIndex="{Binding SelectedProcessIndex, Mode=TwoWay}" Padding="0,0,0,30">
-                    <ListView.ItemTemplate>
-                        <DataTemplate>
-                            <Grid Padding="-12">
-                                <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#888888" Opacity="0.08" Margin="0,15,5,15" CornerRadius="4"/>
-                                <Grid Padding="12">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="60"/>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="30"/>
-                                    </Grid.ColumnDefinitions>
-                                    <Image Source="{Binding AppIcon}" Width="40" Height="40"/>
-                                    <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="2" Padding="10">
-                                        <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="22"/>
-                                        <TextBlock Text="{Binding SystemName}" Opacity="0.7" FontSize="16"/>
-                                        <StackPanel Orientation="Horizontal" Spacing="3">
-                                            <TextBlock Text="ID:" Opacity="0.5" FontSize="12" FontWeight="Light" VerticalAlignment="Center"/>
-                                            <TextBlock Text="{Binding Id}" Opacity="0.7" FontSize="12" FontWeight="Light" VerticalAlignment="Center"/>
-                                        </StackPanel>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <ProgressBar Grid.Row="0" Visibility="{Binding IsLoading}" HorizontalAlignment="Stretch" VerticalAlignment="Top" Maximum="{Binding ListProcessesCount}" Value="{Binding ListPopulateProgress}"/>
+            <ListView Grid.Row="1" x:Name="ProcessesListBox" ItemsSource="{Binding ProcessesList}" SelectedIndex="{Binding SelectedProcessIndex, Mode=TwoWay}" Padding="0,0,0,30">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="-12">
+                            <Border HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#888888" Opacity="0.08" Margin="0,15,5,15" CornerRadius="4"/>
+                            <Grid Padding="12">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="60"/>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="30"/>
+                                </Grid.ColumnDefinitions>
+                                <Image Source="{Binding AppIcon}" Width="40" Height="40"/>
+                                <StackPanel Grid.Column="1" Orientation="Vertical" Spacing="2" Padding="10">
+                                    <TextBlock Text="{Binding Name}" FontWeight="SemiBold" FontSize="22"/>
+                                    <TextBlock Text="{Binding SystemName}" Opacity="0.7" FontSize="16"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="3">
+                                        <TextBlock Text="ID:" Opacity="0.5" FontSize="12" FontWeight="Light" VerticalAlignment="Center"/>
+                                        <TextBlock Text="{Binding Id}" Opacity="0.7" FontSize="12" FontWeight="Light" VerticalAlignment="Center"/>
                                     </StackPanel>
-                                    <Ellipse Grid.Column="2" Fill="{Binding Suspended, Converter={StaticResource BoolToStatusConverter}}" Height="12" Width="12" />
-                                </Grid>
+                                </StackPanel>
+                                <Ellipse Grid.Column="2" Fill="{Binding Suspended, Converter={StaticResource BoolToStatusConverter}}" Height="12" Width="12" />
                             </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </Grid>
+                        </Grid>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
         </Grid>
     </Grid>
 </Page>

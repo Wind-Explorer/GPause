@@ -5,8 +5,6 @@ using System.Security.Principal;
 using GPause.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using Microsoft.Windows.AppLifecycle;
-using Windows.UI.Input.Preview.Injection;
 
 namespace GPause.Views;
 
@@ -22,8 +20,6 @@ public sealed partial class MainPage : Page
         ViewModel = App.GetService<MainViewModel>();
         DataContext = new MainViewModel();
         InitializeComponent();
-        //RefreshProcessesEntries();
-        //ViewModel.ProcessesList += RefreshProcessesEntries();
     }
 
     private enum AlertActions
@@ -34,9 +30,11 @@ public sealed partial class MainPage : Page
 
     private static async Task<AsyncVoidMethodBuilder> ShowAlert(UIElement xamlRoot, string? Title = null, string? MainButtonText = null, string? SecondButtonText = null, string? DismissButtonText = null, string? ContentText = null, AlertActions? action = AlertActions.GeneralAlert)
     {
-        ContentDialog dialog = new();
-        dialog.XamlRoot = xamlRoot.XamlRoot;
-        dialog.Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style;
+        ContentDialog dialog = new()
+        {
+            XamlRoot = xamlRoot.XamlRoot,
+            Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style
+        };
         if (Title != null) { dialog.Title = Title; }
         if (MainButtonText != null) { dialog.PrimaryButtonText = MainButtonText; }
         if (SecondButtonText != null) { dialog.SecondaryButtonText = SecondButtonText; }
@@ -82,53 +80,9 @@ public sealed partial class MainPage : Page
         Environment.Exit(0);
     }
 
-    private void RefreshProcessesEntiresButton_Click(object? sender = null, Microsoft.UI.Xaml.RoutedEventArgs? e = null)
-    {
-        //RefreshProcessesEntries();
-    }
-
-    private void StartLoading()
-    {
-        LoadingArea.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-        MainArea.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-    }
-
-    private void StopLoading()
-    {
-        LoadingArea.Visibility = Microsoft.UI.Xaml.Visibility.Collapsed;
-        MainArea.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-    }
-/*
-    private static void CtrlR()
-    {
-        // Create an instance of the InputInjector
-        var inputInjector = InputInjector.TryCreate();
-
-        // Simulate pressing the Ctrl key
-        inputInjector.InjectKeyboardInput(new[] { new InjectedInputKeyboardInfo
-        {
-            VirtualKey = (ushort)Windows.System.VirtualKey.Control,
-            KeyOptions = InjectedInputKeyOptions.None,
-        }});
-
-        // Simulate pressing the R key
-        inputInjector.InjectKeyboardInput(new[] { new InjectedInputKeyboardInfo
-        {
-            VirtualKey = (ushort)Windows.System.VirtualKey.R,
-            KeyOptions = InjectedInputKeyOptions.None,
-        }});
-
-        // Simulate releasing the Ctrl key
-        inputInjector.InjectKeyboardInput(new[] { new InjectedInputKeyboardInfo
-        {
-            VirtualKey = (ushort)Windows.System.VirtualKey.Control,
-            KeyOptions = InjectedInputKeyOptions.KeyUp,
-        }});
-    }
-*/
     private async void ShellMenuBarSettingsButton_Click(object sender, RoutedEventArgs e)
     {
-        await ShowAlert(xamlRoot: this, Title: "Settings is yet to be implemented.", ContentText: "Look out for future updates!", DismissButtonText:"Okay");
+        await ShowAlert(xamlRoot: this, Title: "Settings is yet to be implemented.", ContentText: "Look out for future updates!", DismissButtonText: "Okay");
     }
 
     private void RunAsAdminEventHandler_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)

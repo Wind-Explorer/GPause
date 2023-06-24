@@ -1,12 +1,10 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using GPause.Models;
-using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
 using PMan;
 using Windows.Storage.FileProperties;
@@ -15,6 +13,8 @@ namespace GPause.ViewModels;
 
 public class MainViewModel : ObservableRecipient, INotifyPropertyChanged
 {
+    private int indexOfProcessToOperate = -1;
+
     private ObservableCollection<ProcessModel>? _processesList;
     public ObservableCollection<ProcessModel>? ProcessesList
     {
@@ -30,14 +30,8 @@ public class MainViewModel : ObservableRecipient, INotifyPropertyChanged
         {
             SetProperty(ref _selectedProcessIndex, value);
             AnyEntrySelected = SelectedProcessIndex >= 0;
+            Debug.WriteLine($"Selected index: {SelectedProcessIndex}");
         }
-    }
-
-    private string _appHeadingText;
-    public string AppHeadingText
-    {
-        get => _appHeadingText;
-        set => SetProperty(ref _appHeadingText, value);
     }
 
     private bool _anyEntrySelected;
@@ -54,27 +48,41 @@ public class MainViewModel : ObservableRecipient, INotifyPropertyChanged
         set => SetProperty(ref _lackPermissions, value);
     }
 
-    // Used to trigger list UI update
-    private bool _listUpdates = false;
-    public bool ListUpdates
+    private int _listPopulateProgress;
+    public int ListPopulateProgress
     {
-        get => _listUpdates;
-        set => SetProperty(ref _listUpdates, value);
+        get => _listPopulateProgress;
+        set => SetProperty(ref _listPopulateProgress, value);
     }
 
-    public ICommand PopulateProcessesListCommand
+    private int _listProcessesCount;
+    public int ListProcessesCount
     {
-        get; private set;
+        get => _listProcessesCount;
+        set => SetProperty(ref _listProcessesCount, value);
     }
-    /// <summary>
-    /// Populate the processes list with entries (Window title, process name and process ID).
-    /// </summary>
-    private async Task<AsyncVoidMethodBuilder> PopulateProcessesList()
+
+    private bool _isLoading = false;
+    public bool IsLoading
     {
+        get => _isLoading;
+        set => SetProperty(ref _isLoading, value);
+    }
+
+    /// <summary>
+    /// Populate the processes list with entries (Window title, process name, process ID, app icon and suspend/resume status).
+    /// </summary>
+    private async Task<int> PopulateProcessesList()
+    {
+        IsLoading = true;
+        ProcessesList!.Clear();
+        ListPopulateProgress = 0;
         Debug.WriteLine("Populating Processes List...");
-        var _processesList = new ObservableCollection<ProcessModel>();
-        foreach (var process in ProcessManager.RunningProcesses())
+        var runningProcesses = ProcessManager.RunningProcesses();
+        ListProcessesCount = runningProcesses.Length;
+        foreach (var process in runningProcesses)
         {
+            ListPopulateProgress += 1;
             var matchedSystemProcess = false;
             foreach (var i in ProcessManager.KnownWindowsSystemProcesses)
             {
@@ -93,8 +101,15 @@ public class MainViewModel : ObservableRecipient, INotifyPropertyChanged
                 LackPermissions = true;
                 continue;
             }
+
+            // if program complains about not being able to fetch icon fast enough first time,
+            // just fetch again, then it works because it already tried fetching before so the
+            // second time the fetching is fast enough to catch up with the UI.
+            // very very dumb way to do this but works flawlessly (somehow).
+            var appIcon = await GetAppIcon(filePath) ?? await GetAppIcon(filePath);
+
             Debug.WriteLine($"Program: {windowText}\nSuspended: {isSuspended}\n");
-            _processesList.Add(new ProcessModel
+            ProcessesList.Add(new ProcessModel
             {
                 Name = windowText,
                 SystemName = process.ProcessName,
@@ -102,17 +117,11 @@ public class MainViewModel : ObservableRecipient, INotifyPropertyChanged
                 Suspended = isSuspended,
                 Process = process,
                 ExecutablePath = filePath,
-                AppIcon = await GetAppIcon(filePath)
+                AppIcon = appIcon
             });
         }
-        ProcessesList.Clear();
-        foreach (var processEntry in _processesList)
-        {
-            ProcessesList.Add(processEntry);
-        }
-        var e = new AsyncVoidMethodBuilder();
-        e.SetResult();
-        return e;
+        IsLoading = false;
+        return 0;
     }
 
     public ICommand SuspendProcessCommand
@@ -125,19 +134,12 @@ public class MainViewModel : ObservableRecipient, INotifyPropertyChanged
         {
             return;
         }
-        Process targetProcess;
-        try
-        {
-            targetProcess = ProcessesList![SelectedProcessIndex].Process!;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            await PopulateProcessesList();
-            targetProcess = ProcessesList![SelectedProcessIndex].Process!;
-        }
-        Debug.WriteLine($"Minimizing window of process (Index {SelectedProcessIndex})");
+        indexOfProcessToOperate = SelectedProcessIndex;
+        await PopulateProcessesList();
+        var targetProcess = ProcessesList![indexOfProcessToOperate].Process!;
+        Debug.WriteLine($"Minimizing window of process (Index {indexOfProcessToOperate})");
         ProcessManager.MinimizeWindow(targetProcess);
-        Debug.WriteLine($"Suspending process (Index {SelectedProcessIndex})");
+        Debug.WriteLine($"Suspending process (Index {indexOfProcessToOperate})");
         ProcessManager.Suspend(targetProcess);
         Debug.WriteLine("Re-populating list (suspended)");
         await PopulateProcessesList();
@@ -145,7 +147,8 @@ public class MainViewModel : ObservableRecipient, INotifyPropertyChanged
 
     public ICommand RefreshProcessesListCommand
     {
-    get; private set; }
+        get; private set;
+    }
     private async Task<int> RefreshProcessesList()
     {
         await PopulateProcessesList();
@@ -162,21 +165,14 @@ public class MainViewModel : ObservableRecipient, INotifyPropertyChanged
         {
             return;
         }
-        Process targetProcess;
-        Debug.WriteLine($"Resuming process (Index {SelectedProcessIndex})");
-        try
-        {
-            targetProcess = ProcessesList![SelectedProcessIndex].Process!;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            await PopulateProcessesList();
-            targetProcess = ProcessesList![SelectedProcessIndex].Process!;
-        }
+        indexOfProcessToOperate = SelectedProcessIndex;
+        Debug.WriteLine($"Resuming process (Index {indexOfProcessToOperate})");
+        await PopulateProcessesList();
+        var targetProcess = ProcessesList![indexOfProcessToOperate].Process!;
         ProcessManager.Resume(targetProcess);
         Debug.WriteLine("Re-populating list (resumed)");
         await PopulateProcessesList();
-        Debug.WriteLine($"Restoring window of process (Index {SelectedProcessIndex})");
+        Debug.WriteLine($"Restoring window of process (Index {indexOfProcessToOperate})");
         ProcessManager.RestoreWindow(targetProcess);
     }
 
@@ -190,8 +186,9 @@ public class MainViewModel : ObservableRecipient, INotifyPropertyChanged
         {
             return;
         }
+        indexOfProcessToOperate = SelectedProcessIndex;
         await PopulateProcessesList();
-        Process.Start("explorer.exe", "/select, \"" + ProcessesList![SelectedProcessIndex].ExecutablePath + "\"");
+        Process.Start("explorer.exe", "/select, \"" + ProcessesList![indexOfProcessToOperate].ExecutablePath + "\"");
     }
 
     public ICommand KillSelectedProcessCommand
@@ -204,20 +201,30 @@ public class MainViewModel : ObservableRecipient, INotifyPropertyChanged
         {
             return;
         }
+        indexOfProcessToOperate = SelectedProcessIndex;
         await PopulateProcessesList();
-        ProcessManager.Terminate(ProcessesList![SelectedProcessIndex].Process!);
+        Debug.WriteLine(indexOfProcessToOperate);
+        ProcessManager.Terminate(ProcessesList![indexOfProcessToOperate].Process!);
+        await PopulateProcessesList();
     }
 
     private async void InitializeProcessList()
     {
-        await Task.Delay(200);
         await PopulateProcessesList();
     }
 
-    private static async Task<BitmapImage> GetAppIcon(string processPath)
+    private static async Task<BitmapImage?> GetAppIcon(string processPath)
     {
         var file = await Windows.Storage.StorageFile.GetFileFromPathAsync(processPath);
-        var iconThumbnail = await file.GetThumbnailAsync(ThumbnailMode.SingleItem, 32);
+        StorageItemThumbnail iconThumbnail;
+        try
+        {
+            iconThumbnail = await file.GetThumbnailAsync(ThumbnailMode.SingleItem, 32);
+        }
+        catch
+        {
+            return null;
+        }
         var bi = new BitmapImage();
         bi.SetSource(iconThumbnail);
         return bi;
@@ -231,7 +238,7 @@ public class MainViewModel : ObservableRecipient, INotifyPropertyChanged
         ResumeProcessCommand = new RelayCommand(ResumeProcess);
         OpenInFileExplorerCommand = new RelayCommand(OpenInFileExplorer);
         KillSelectedProcessCommand = new RelayCommand(KillSelectedProcess);
-        SelectedProcessIndex = 0;
+        SelectedProcessIndex = -1;
         AnyEntrySelected = SelectedProcessIndex >= 0;
         InitializeProcessList();
     }

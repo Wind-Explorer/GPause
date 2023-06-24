@@ -4,22 +4,16 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals" xmlns:services="using:GPause.Services"
+    xmlns:animatedvisuals="using:Microsoft.UI.Xaml.Controls.AnimatedVisuals" 
     Loaded="OnLoaded"
     Unloaded="OnUnloaded"
     mc:Ignorable="d">
-    <Page.Resources>
-        <SolidColorBrush x:Key="LightBackgroundBrush" Color="Blue" />
-        <SolidColorBrush x:Key="DarkBackgroundBrush" Color="Yellow" />
-        <services:ThemeToBackgroundConverter x:Key="ThemeToBackgroundConverter" />
-    </Page.Resources>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="30" />
+            <RowDefinition Height="28" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <Grid Grid.Row="0" x:Name="AppTitleBar">
-            <!--<Border Background="{x:Bind IsLightTheme, Converter={StaticResource ThemeToBackgroundConverter}}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Opacity="0.7"/>-->
             <Image Source="/Assets/WindowIcon.ico" HorizontalAlignment="Left" Width="16" Height="16" Margin="8,0,0,0"/>
             <TextBlock x:Name="AppTitleBarText" VerticalAlignment="Center" TextWrapping="NoWrap" Style="{StaticResource CaptionTextBlockStyle}" Margin="32, -2, 0, 0"/>
         </Grid>

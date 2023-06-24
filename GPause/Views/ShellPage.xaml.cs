@@ -44,7 +44,7 @@ public sealed partial class ShellPage : Page
         base.OnNavigatedTo(e);
         // Manually detect the system theme using the Windows Registry
         var themeKey = @"HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
-        var currentTheme = (int)Registry.GetValue(themeKey, "AppsUseLightTheme", 1);
+        var currentTheme = (int)Registry.GetValue(themeKey, "AppsUseLightTheme", 1)!;
         // Determine the system theme based on the currentTheme value
         IsLightTheme = (currentTheme == 1);
     }

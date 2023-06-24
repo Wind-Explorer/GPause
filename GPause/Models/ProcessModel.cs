@@ -1,11 +1,10 @@
-﻿using System.ComponentModel;
-using System.Diagnostics;
-using Microsoft.UI.Xaml.Controls;
+﻿using System.Diagnostics;
+using CommunityToolkit.Mvvm.ComponentModel;
 using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace GPause.Models;
 
-public class ProcessModel : INotifyPropertyChanged
+public class ProcessModel : ObservableRecipient
 {
     private int _id;
     public int Id
@@ -103,12 +102,5 @@ public class ProcessModel : INotifyPropertyChanged
                 OnPropertyChanged(nameof(AppIcon));
             }
         }
-    }
-
-    public event PropertyChangedEventHandler PropertyChanged;
-
-    protected virtual void OnPropertyChanged(string propertyName)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
