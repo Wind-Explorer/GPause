@@ -1,4 +1,5 @@
-﻿using GPause.Activation;
+﻿using System.Diagnostics;
+using GPause.Activation;
 using GPause.Contracts.Services;
 using GPause.Core.Contracts.Services;
 using GPause.Core.Services;
@@ -39,8 +40,30 @@ public partial class App : Application
 
     public static WindowEx MainWindow { get; } = new MainWindow();
 
+    private void LookForUpdates()
+    {
+        var haveUpdate = Helpers.GitHubInteraction.CheckForUpdates();
+        if (haveUpdate.HasValue)
+        {
+            if (haveUpdate.Value)
+            {
+                Debug.WriteLine("Updating...");
+                Helpers.GitHubInteraction.DownloadUpdate();
+            }
+            else
+            {
+                Debug.WriteLine("No updates!");
+            }
+        }
+        else
+        {
+            Debug.WriteLine("Failed to look for updates!");
+        }
+    }
+
     public App()
     {
+        LookForUpdates();
         InitializeComponent();
 
         Host = Microsoft.Extensions.Hosting.Host.

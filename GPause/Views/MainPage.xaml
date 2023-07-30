@@ -41,12 +41,12 @@
                     </AppBarButton.KeyboardAccelerators>
                 </AppBarButton>
                 <CommandBar.SecondaryCommands>
-                    <AppBarButton Icon="Setting" Label="Settings" x:Name="ShellMenuBarSettingsButton" x:Uid="ShellMenuBarSettingsButton" Click="ShellMenuBarSettingsButton_Click">
+                    <!--"<AppBarButton Icon="Setting" Label="Settings" x:Name="ShellMenuBarSettingsButton" x:Uid="ShellMenuBarSettingsButton" Click="ShellMenuBarSettingsButton_Click">
                         <AppBarButton.KeyboardAccelerators>
                             <KeyboardAccelerator Modifiers="Control" Key="I" />
                         </AppBarButton.KeyboardAccelerators>
-                    </AppBarButton>
-                    <AppBarButton Icon="Upload" Label="Look for updates" x:Name="UpdateAppButton"/>
+                    </AppBarButton>-->
+                    <AppBarButton Label="About this app" Click="AboutAppButton_Click" x:Name="AboutAppButton"/>
                 </CommandBar.SecondaryCommands>
             </CommandBar>
         </Grid>

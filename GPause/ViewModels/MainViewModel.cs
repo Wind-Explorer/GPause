@@ -8,6 +8,7 @@ using GPause.Models;
 using Microsoft.UI.Xaml.Media.Imaging;
 using PMan;
 using Windows.Storage.FileProperties;
+using GPause.Helpers;
 
 namespace GPause.ViewModels;
 
@@ -208,6 +209,31 @@ public class MainViewModel : ObservableRecipient, INotifyPropertyChanged
         await PopulateProcessesList();
     }
 
+    public ICommand LookForUpdatesCommand
+    {
+        get; private set;
+    }
+
+    private void LookForUpdates()
+    {
+        var haveUpdate = GitHubInteraction.CheckForUpdates();
+        if (haveUpdate.HasValue)
+        {
+            if (haveUpdate.Value)
+            {
+                Debug.WriteLine("Updating...");
+            }
+            else
+            {
+                Debug.WriteLine("No updates!");
+            }
+        }
+        else
+        {
+            Debug.WriteLine("Failed to look for updates!");
+        }
+    }
+
     private async void InitializeProcessList()
     {
         await PopulateProcessesList();
@@ -238,6 +264,7 @@ public class MainViewModel : ObservableRecipient, INotifyPropertyChanged
         ResumeProcessCommand = new RelayCommand(ResumeProcess);
         OpenInFileExplorerCommand = new RelayCommand(OpenInFileExplorer);
         KillSelectedProcessCommand = new RelayCommand(KillSelectedProcess);
+        LookForUpdatesCommand = new RelayCommand(LookForUpdates);
         SelectedProcessIndex = -1;
         AnyEntrySelected = SelectedProcessIndex >= 0;
         InitializeProcessList();

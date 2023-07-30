@@ -94,4 +94,15 @@ public sealed partial class MainPage : Page
     {
         AdminRelauncher();
     }
+
+    private async void AboutAppButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Build current version string
+        var packageVersion = Windows.ApplicationModel.Package.Current.Id.Version;
+        var appVersion = string.Format("{0}.{1}.{2}",
+                    packageVersion.Major,
+                    packageVersion.Minor,
+                    packageVersion.Build);
+        await ShowAlert(xamlRoot: this, Title: "GPause by Adam C.", ContentText: $"Version {appVersion}", DismissButtonText: "Okay");
+    }
 }
